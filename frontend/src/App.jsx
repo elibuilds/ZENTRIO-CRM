@@ -6,7 +6,7 @@ function App() {
 
   return (
     <>
-     <h1>Start here</h1>
+     <h1>New File</h1>
     </>
   )
 }
