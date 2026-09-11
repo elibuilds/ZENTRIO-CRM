@@ -1,14 +1,8 @@
-import { useState } from 'react'
+import LeadsPage from './pages/leads/LeadsPage'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-     <h1>New File</h1>
-    </>
-  )
+  return <LeadsPage />
 }
 
 export default App
