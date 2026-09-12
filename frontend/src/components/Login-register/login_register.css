@@ -48,10 +48,14 @@
     border-radius: 10px;
 }
 
-.icon{
-   font-size: 20px;
+.input svg{
+   font-size: 1.2rem;
+   margin-left: 18px;
+   margin-right: 8px;
    
 }
+
+
 
 .input input{
     height: 50px;
