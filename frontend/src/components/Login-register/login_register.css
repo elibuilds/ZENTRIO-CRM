@@ -8,6 +8,7 @@
     margin-bottom: 100px;
     background: #ffffff75;
     padding-bottom: 30px;
+    border-radius: 15px;
 }
 
 .header{
@@ -16,7 +17,7 @@
     align-items: center;
     gap: 9px;
     width: 100%;
-    margin-top: 30px;
+    margin-top: 25px;
 }
 
 .text{
@@ -68,7 +69,7 @@
     font-size: 19px;
 }
 
-.input input ::placeholder{
+.input input::placeholder{
      padding-left: 19px;
 }
 

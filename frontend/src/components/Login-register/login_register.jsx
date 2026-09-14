@@ -29,15 +29,15 @@ const [action,setAction] = useState("Login");
 
         <div className="input">
           <RiLockPasswordFill className="icon" />
-          <input type="password" placeholder= "Password" />
+          <input type="password" placeholder= "Enter your password" />
         </div>
       </div>
 
-      {action==="Register"?<div></div>: <div className="forgot-password"> Lost Password? <span>Click Here</span></div>}
+      {action==="Register"?<div></div>: <div className="forgot-password"> Forgot password? <span>Click Here</span></div>}
 
       <div className='submit-container'>
-        <div className={action==="Login"?"submit gray":"submit"} onClick={()=>{setAction("Register")}}>Login</div>
-        <div className={action==="Register"?"submit gray":"submit"}onClick={()=>{setAction("Login")}}>Register</div>
+       <div className={action==="Login"?"submit gray":"submit"} onClick={()=>{setAction("Login")}}>Login</div>
+       <div className={action==="Register"?"submit gray":"submit"} onClick={()=>{setAction("Register")}}>Register</div>
       </div>
     </div>
   )
