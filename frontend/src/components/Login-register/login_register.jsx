@@ -1,16 +1,23 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import './login_register.css'
 
 import { RiLockPasswordFill } from "react-icons/ri";
 import { MdEmail } from "react-icons/md";
 import { IoPersonSharp } from "react-icons/io5";
 
-const Login_register = () => {
+const Login_register = ({ onSuccess }) => {
+  const [action, setAction] = useState("Register");
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+  const [message, setMessage] = useState("");
 
 const [action,setAction] = useState("Login");
 
   return (
-    <div className='container'>
+    <form className='container' onSubmit={handleSubmit}>
       <div className="header">
         <div className="text">{action}</div>
         <div className="underline"></div>
@@ -22,10 +29,10 @@ const [action,setAction] = useState("Login");
           <input type="text" placeholder="Name" />
         </div>}
 
-        <div className="input">
+        {action === "Register" && <div className="input">
           <MdEmail />
-          <input type="email" placeholder= "Email" />
-        </div>
+          <input name="email" value={formData.email} onChange={handleChange} type="email" placeholder="Email" required />
+        </div>}
 
         <div className="input">
           <RiLockPasswordFill className="icon" />
@@ -39,7 +46,7 @@ const [action,setAction] = useState("Login");
        <div className={action==="Login"?"submit gray":"submit"} onClick={()=>{setAction("Login")}}>Login</div>
        <div className={action==="Register"?"submit gray":"submit"} onClick={()=>{setAction("Register")}}>Register</div>
       </div>
-    </div>
+    </form>
   )
 }
 
