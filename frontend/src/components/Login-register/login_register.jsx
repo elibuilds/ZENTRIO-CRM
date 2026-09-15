@@ -7,40 +7,39 @@ import { IoPersonSharp } from "react-icons/io5";
 
 const Login_register = () => {
 
+const [action,setAction] = useState("Login");
 
-  const [action, setAction] = useState("Login");
-
-  return (
-    <form className="container" onSubmit={handleSubmit}>
+  return ( 
+    <div className='container'>
       <div className="header">
         <div className="text">{action}</div>
         <div className="underline"></div>
       </div>
 
       <div className="inputs">
-        {action === "Login" ? <div></div> : <div className="input">
+        {action==="Login"? <div></div>: <div className="input">
           <IoPersonSharp />
           <input type="text" placeholder="Name" />
         </div>}
 
         <div className="input">
           <MdEmail />
-          <input type="email" placeholder="Email" />
+          <input type="email" placeholder= "Email" />
         </div>
 
         <div className="input">
           <RiLockPasswordFill className="icon" />
-          <input type="password" placeholder="Enter your password" />
+          <input type="password" placeholder= "Enter your password" />
         </div>
-      </div>
+      </div> 
 
-      {action === "Register" ? <div></div> : <div className="forgot-password"> Forgot password? <span>Click Here</span></div>}
+      {action==="Register"?<div></div>: <div className="forgot-password"> Forgot password? <span>Click Here</span></div>}
 
       <div className='submit-container'>
-        <div className={action === "Login" ? "submit gray" : "submit"} onClick={() => { setAction("Login") }}>Login</div>
-        <div className={action === "Register" ? "submit gray" : "submit"} onClick={() => { setAction("Register") }}>Register</div>
+       <div className={action==="Login"?"submit gray":"submit"} onClick={()=>{setAction("Login")}}>Login</div>
+       <div className={action==="Register"?"submit gray":"submit"} onClick={()=>{setAction("Register")}}>Register</div>
       </div>
-    </form>
+    </div>
   )
 }
 
