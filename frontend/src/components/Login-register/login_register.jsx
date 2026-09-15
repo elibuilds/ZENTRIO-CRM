@@ -9,7 +9,7 @@ const Login_register = () => {
 
 const [action,setAction] = useState("Login");
 
-  return (
+  return ( 
     <div className='container'>
       <div className="header">
         <div className="text">{action}</div>
