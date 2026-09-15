@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { pipelineApi, pipelineStages } from '../../api/pipeline'
+import { getAllowedStages, pipelineApi, pipelineStages } from '../../api/pipeline'
 import './PipelinePage.css'
 
 function PipelinePage() {
@@ -50,19 +50,19 @@ function PipelinePage() {
 
       <section className="pipeline-board" aria-label="Deal pipeline">
         {pipelineStages.map((stage) => {
-          const stageDeals = deals.filter((deal) => deal.stage === stage)
+          const stageDeals = deals.filter((deal) => deal.stage === stage.value)
           const stageValue = stageDeals.reduce((sum, deal) => sum + deal.value, 0)
           const isDropTarget = draggedDealId !== null
 
           return (
             <section
               className={`pipeline-column${isDropTarget ? ' pipeline-column-droppable' : ''}`}
-              key={stage}
+              key={stage.value}
               onDragOver={(event) => event.preventDefault()}
-              onDrop={() => { moveDeal(draggedDealId, stage); setDraggedDealId(null) }}
+              onDrop={() => { moveDeal(draggedDealId, stage.value); setDraggedDealId(null) }}
             >
               <header className="pipeline-column-heading">
-                <div><h2>{stage}</h2><span>{stageDeals.length}</span></div>
+                <div><h2>{stage.label}</h2><span>{stageDeals.length}</span></div>
                 <strong>{formatCurrency(stageValue)}</strong>
               </header>
               <div className="pipeline-deal-list">
@@ -83,7 +83,10 @@ function PipelinePage() {
                       <label>
                         <span className="pipeline-sr-only">Change stage for {deal.title}</span>
                         <select value={deal.stage} onChange={(event) => moveDeal(deal.id, event.target.value)}>
-                          {pipelineStages.map((option) => <option key={option} value={option}>{option}</option>)}
+                          {getAllowedStages(deal.stage).map((value) => {
+                            const option = pipelineStages.find((item) => item.value === value)
+                            return <option key={value} value={value}>{option.label}</option>
+                          })}
                         </select>
                       </label>
                     </footer>

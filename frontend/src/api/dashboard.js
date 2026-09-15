@@ -7,9 +7,10 @@ const dashboardSnapshot = {
   ],
   pipeline: [
     { stage: 'New', count: 8, value: 22400, color: '#5b7cfa' },
-    { stage: 'Qualified', count: 7, value: 31600, color: '#6d55d8' },
+    { stage: 'Contacted', count: 7, value: 31600, color: '#6d55d8' },
     { stage: 'Proposal', count: 5, value: 26800, color: '#a85bd5' },
-    { stage: 'Negotiation', count: 4, value: 24000, color: '#e39437' },
+    { stage: 'Won', count: 4, value: 24000, color: '#168258' },
+    { stage: 'Lost', count: 2, value: 8400, color: '#a6afbd' },
   ],
   activities: [
     { id: 'activity-1', initials: 'AM', name: 'Alex Morgan', action: 'moved Northstar Labs to Qualified', time: '12 min ago', tone: 'indigo' },
