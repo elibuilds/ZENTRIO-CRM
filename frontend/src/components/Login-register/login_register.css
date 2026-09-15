@@ -4,11 +4,11 @@
     width: 600px;
     max-height: 100vh;
     margin: auto;
-    margin-top: 200px;
+    margin-top: 100px;
     margin-bottom: 100px;
     background: #ffffff75;
     padding-bottom: 30px;
-    border-radius: 15p;
+    border-radius: 15px;
 }
 
 .header{
@@ -45,7 +45,7 @@
     align-items: center;
     margin: auto;
     width: 480px;
-    height: 80px;
+    height: 70px;
     background: rgb(248, 248, 248);
     border-radius: 10px;
 }
@@ -74,7 +74,7 @@
 }
 
 .forgot-password{
-    padding-left: 62px;
+    padding-left: 60px;
     margin-top: 27px;
     color: #797979;
     font-size: 18px;
@@ -98,12 +98,12 @@
     width: 220px;
     height: 59px;
     color: #fff;
-    background: #3c009d;
+    background: #7549a1;
     border-radius: 50px;
     font-size: 19px;
     font-weight: 700;
     cursor: pointer;
-    margin-bottom: 20px;
+    margin-bottom: 70px;
 }
 
 .gray{
