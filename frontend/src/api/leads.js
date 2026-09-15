@@ -1,95 +1,44 @@
-const mockLeads = [
-  {
-    id: 'lead-1',
-    name: 'Olivia Bennett',
-    company: 'Northstar Labs',
-    email: 'olivia@northstarlabs.com',
-    stage: 'Qualified',
-    stageTone: 'indigo',
-    value: 32000,
-    owner: 'AM',
-    ownerName: 'Alex Morgan',
-    nextActivity: 'Today, 2:00 PM',
-    updatedAt: '2 hours ago',
-  },
-  {
-    id: 'lead-2',
-    name: 'Marcus Chen',
-    company: 'Vertex Health',
-    email: 'marcus@vertexhealth.com',
-    stage: 'Proposal',
-    stageTone: 'purple',
-    value: 18500,
-    owner: 'SK',
-    ownerName: 'Sam Kim',
-    nextActivity: 'Tomorrow, 9:30 AM',
-    updatedAt: 'Yesterday',
-  },
-  {
-    id: 'lead-3',
-    name: 'Sofia Rodriguez',
-    company: 'Brightline Studio',
-    email: 'sofia@brightline.studio',
-    stage: 'New',
-    stageTone: 'blue',
-    value: 9600,
-    owner: 'AM',
-    ownerName: 'Alex Morgan',
-    nextActivity: 'No activity',
-    updatedAt: '3 days ago',
-  },
-  {
-    id: 'lead-4',
-    name: 'James Wilson',
-    company: 'Cedar & Co.',
-    email: 'james@cedarandco.com',
-    stage: 'Negotiation',
-    stageTone: 'amber',
-    value: 44700,
-    owner: 'JR',
-    ownerName: 'Jordan Reed',
-    nextActivity: 'Sep 16, 11:00 AM',
-    updatedAt: '4 days ago',
-  },
+const mockDeals = [
+  { id: 1, contact_id: 101, title: 'Website redesign', value: 9600, stage: 'NEW', created_at: '2026-09-10T09:20:00Z', updated_at: '2026-09-14T14:10:00Z' },
+  { id: 2, contact_id: 102, title: 'Annual platform plan', value: 32000, stage: 'CONTACTED', created_at: '2026-09-08T13:05:00Z', updated_at: '2026-09-15T08:45:00Z' },
+  { id: 3, contact_id: 103, title: 'Team expansion', value: 18500, stage: 'PROPOSAL', created_at: '2026-09-03T10:30:00Z', updated_at: '2026-09-14T16:30:00Z' },
+  { id: 4, contact_id: 104, title: 'Enterprise rollout', value: 44700, stage: 'WON', created_at: '2026-08-28T11:00:00Z', updated_at: '2026-09-13T09:15:00Z' },
+  { id: 5, contact_id: 105, title: 'Operations workspace', value: 12800, stage: 'LOST', created_at: '2026-08-26T08:50:00Z', updated_at: '2026-09-12T12:00:00Z' },
 ]
 
-//mock api to simulate integration with backend
+const wait = (duration) => new Promise((resolve) => setTimeout(resolve, duration))
 
-const wait = (duration) => new Promise((resolve) => {
-  setTimeout(resolve, duration)
-})
+export const leadFilterOptions = {
+  stages: [
+    { value: 'NEW', label: 'New' }, { value: 'CONTACTED', label: 'Contacted' },
+    { value: 'PROPOSAL', label: 'Proposal' }, { value: 'WON', label: 'Won' }, { value: 'LOST', label: 'Lost' },
+  ],
+}
+
+const allowedTransitions = { NEW: ['CONTACTED', 'LOST'], CONTACTED: ['PROPOSAL', 'LOST'], PROPOSAL: ['WON', 'LOST'], WON: [], LOST: [] }
+
+export function getAllowedStages(currentStage) {
+  return [currentStage, ...(allowedTransitions[currentStage] ?? [])]
+}
 
 export const leadApi = {
   async list(params = {}) {
-    await wait(650)
-
-    if (params.simulateError) {
-      throw new Error('Unable to connect to the leads service.')
-    }
-
+    await wait(350)
     const search = params.search?.trim().toLowerCase() ?? ''
-    const leads = mockLeads.filter((lead) => {
-      const matchesSearch = !search
-        || [lead.name, lead.company, lead.email].some((value) => value.toLowerCase().includes(search))
-      const matchesStage = !params.stage || lead.stage === params.stage
-      const matchesOwner = !params.owner || lead.ownerName === params.owner
-
-      return matchesSearch && matchesStage && matchesOwner
+    const deals = mockDeals.filter((deal) => {
+      const matchesSearch = !search || [deal.title, String(deal.contact_id), String(deal.id)].some((value) => value.toLowerCase().includes(search))
+      return matchesSearch && (!params.stage || deal.stage === params.stage)
     })
-
-    return {
-      data: leads,
-      pagination: {
-        page: 1,
-        pageSize: 25,
-        total: leads.length,
-        totalPages: leads.length ? 1 : 0,
-      },
-    }
+    return { data: deals.map((deal) => ({ ...deal })) }
   },
-}
 
-export const leadFilterOptions = {
-  stages: ['New', 'Qualified', 'Proposal', 'Negotiation'],
-  owners: ['Alex Morgan', 'Sam Kim', 'Jordan Reed'],
+  async updateStage(dealId, stage) {
+    await wait(200)
+    const deal = mockDeals.find((item) => item.id === dealId)
+    if (!deal) throw new Error('Deal not found.')
+    if (!getAllowedStages(deal.stage).includes(stage)) throw new Error(`A deal cannot move from ${deal.stage} to ${stage}.`)
+    deal.stage = stage
+    deal.updated_at = new Date().toISOString()
+    return { ...deal }
+  },
 }

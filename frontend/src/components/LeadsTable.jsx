@@ -1,158 +1,44 @@
-import { leadFilterOptions } from '../api/leads'
-import EditableCell from './EditableCell'
+import { getAllowedStages, leadFilterOptions } from '../api/leads'
 
-const stageTones = {
-  New: 'blue',
-  Qualified: 'indigo',
-  Proposal: 'purple',
-  Negotiation: 'amber',
-}
+const stageTones = { NEW: 'blue', CONTACTED: 'indigo', PROPOSAL: 'purple', WON: 'green', LOST: 'gray' }
 
-function LeadsTable({
-  leads,
-  onSelectionChange,
-  onUpdateLead,
-  selectedLeadIds,
-}) {
-  const allLeadsSelected = leads.length > 0 && selectedLeadIds.length === leads.length
-
-  const toggleLeadSelection = (leadId) => {
-    onSelectionChange((currentSelection) => (
-      currentSelection.includes(leadId)
-        ? currentSelection.filter((id) => id !== leadId)
-        : [...currentSelection, leadId]
-    ))
-  }
-
-  const toggleAllLeads = () => {
-    onSelectionChange(allLeadsSelected ? [] : leads.map((lead) => lead.id))
-  }
+function LeadsTable({ deals, onStageChange, selectedDealIds, onSelectionChange }) {
+  const allDealsSelected = deals.length > 0 && deals.every((deal) => selectedDealIds.includes(deal.id))
+  const toggleDealSelection = (dealId) => onSelectionChange((current) => (
+    current.includes(dealId) ? current.filter((id) => id !== dealId) : [...current, dealId]
+  ))
 
   return (
     <div className="table-wrapper">
       <table>
-        <caption className="sr-only">Lead list</caption>
-        <thead>
-          <tr>
-            <th scope="col" className="selection-column">
-              <input
-                aria-label="Select all leads"
-                checked={allLeadsSelected}
-                onChange={toggleAllLeads}
-                type="checkbox"
-              />
-            </th>
-            <th scope="col">Lead</th>
-            <th scope="col">Company</th>
-            <th scope="col">Email</th>
-            <th scope="col">Stage</th>
-            <th scope="col">Value</th>
-            <th scope="col">Owner</th>
-            <th scope="col">Next activity</th>
-            <th scope="col">Updated</th>
+        <caption className="sr-only">Deal list</caption>
+        <thead><tr>
+          <th scope="col" className="selection-column"><input aria-label="Select all deals" checked={allDealsSelected} onChange={() => onSelectionChange(allDealsSelected ? [] : deals.map((deal) => deal.id))} type="checkbox" /></th>
+          <th scope="col">Deal</th><th scope="col">Contact ID</th><th scope="col">Stage</th><th scope="col">Value</th><th scope="col">Created</th><th scope="col">Updated</th>
+        </tr></thead>
+        <tbody>{deals.map((deal) => (
+          <tr key={deal.id}>
+            <td className="selection-column"><input aria-label={`Select ${deal.title}`} checked={selectedDealIds.includes(deal.id)} onChange={() => toggleDealSelection(deal.id)} type="checkbox" /></td>
+            <td><strong className="deal-title">{deal.title}</strong><span className="deal-id">Deal #{deal.id}</span></td>
+            <td>{deal.contact_id}</td>
+            <td><select className={`cell-select status-select status-${stageTones[deal.stage]}`} aria-label={`Change stage for ${deal.title}`} value={deal.stage} onChange={(event) => onStageChange(deal.id, event.target.value)}>
+              {getAllowedStages(deal.stage).map((value) => {
+                const option = leadFilterOptions.stages.find((item) => item.value === value)
+                return <option key={value} value={value}>{option.label}</option>
+              })}
+            </select></td>
+            <td className="value-cell">{formatCurrency(deal.value)}</td>
+            <td><span className="read-only-cell">{formatDate(deal.created_at)}</span></td>
+            <td><span className="read-only-cell">{formatDate(deal.updated_at)}</span></td>
           </tr>
-        </thead>
-        <tbody>
-          {leads.map((lead) => (
-            <tr key={lead.id}>
-              <td className="selection-column">
-                <input
-                  aria-label={`Select ${lead.name}`}
-                  checked={selectedLeadIds.includes(lead.id)}
-                  onChange={() => toggleLeadSelection(lead.id)}
-                  type="checkbox"
-                />
-              </td>
-              <td>
-                <div className="lead-cell">
-                  <div className="avatar" aria-hidden="true">{getInitials(lead.name)}</div>
-                  <div className="cell-editor">
-                    <EditableCell
-                      ariaLabel={`Edit name for ${lead.name}`}
-                      value={lead.name}
-                      onSave={(name) => onUpdateLead(lead.id, { name })}
-                    />
-                  </div>
-                </div>
-              </td>
-              <td>
-                <EditableCell
-                  ariaLabel={`Edit company for ${lead.name}`}
-                  value={lead.company}
-                  onSave={(company) => onUpdateLead(lead.id, { company })}
-                />
-              </td>
-              <td>
-                <EditableCell
-                  ariaLabel={`Edit email for ${lead.name}`}
-                  value={lead.email}
-                  type="email"
-                  onSave={(email) => onUpdateLead(lead.id, { email })}
-                />
-              </td>
-              <td>
-                <select
-                  className={`cell-select status-select status-${stageTones[lead.stage]}`}
-                  aria-label={`Change stage for ${lead.name}`}
-                  value={lead.stage}
-                  onChange={(event) => onUpdateLead(lead.id, {
-                    stage: event.target.value,
-                    stageTone: stageTones[event.target.value],
-                  })}
-                >
-                  {leadFilterOptions.stages.map((stage) => <option key={stage} value={stage}>{stage}</option>)}
-                </select>
-              </td>
-              <td>
-                <EditableCell
-                  ariaLabel={`Edit value for ${lead.name}`}
-                  value={lead.value}
-                  type="number"
-                  onSave={(value) => onUpdateLead(lead.id, { value: Number(value) || 0 })}
-                />
-              </td>
-              <td>
-                <select
-                  className="cell-select owner-select"
-                  aria-label={`Change owner for ${lead.name}`}
-                  value={lead.ownerName}
-                  onChange={(event) => onUpdateLead(lead.id, {
-                    ownerName: event.target.value,
-                    owner: getInitials(event.target.value),
-                  })}
-                >
-                  {leadFilterOptions.owners.map((owner) => <option key={owner} value={owner}>{owner}</option>)}
-                </select>
-              </td>
-              <td>
-                <EditableCell
-                  ariaLabel={`Edit next activity for ${lead.name}`}
-                  value={lead.nextActivity}
-                  muted={lead.nextActivity === 'No activity'}
-                  onSave={(nextActivity) => onUpdateLead(lead.id, { nextActivity })}
-                />
-              </td>
-              <td><span className="read-only-cell">{lead.updatedAt}</span></td>
-            </tr>
-          ))}
-        </tbody>
+        ))}</tbody>
       </table>
-      <footer className="table-footer">
-        <span>Showing {leads.length} {leads.length === 1 ? 'lead' : 'leads'}</span>
-        <span className="footer-note">Click any cell to edit</span>
-      </footer>
+      <footer className="table-footer"><span>Showing {deals.length} {deals.length === 1 ? 'deal' : 'deals'}</span><span className="footer-note">Stage changes follow the pipeline rules</span></footer>
     </div>
   )
 }
 
-function getInitials(value) {
-  return value
-    .split(' ')
-    .filter(Boolean)
-    .map((part) => part[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
-}
+function formatCurrency(value) { return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value) }
+function formatDate(value) { return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(value)) }
 
 export default LeadsTable
