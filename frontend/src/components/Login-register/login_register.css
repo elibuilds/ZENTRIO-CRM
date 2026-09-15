@@ -2,11 +2,13 @@
     display: flex;
     flex-direction: column;
     width: 600px;
+    max-height: 100vh;
     margin: auto;
     margin-top: 200px;
     margin-bottom: 100px;
     background: #ffffff75;
     padding-bottom: 30px;
+    border-radius: 15px;
 }
 
 .header{
@@ -15,7 +17,7 @@
     align-items: center;
     gap: 9px;
     width: 100%;
-    margin-top: 30px;
+    margin-top: 25px;
 }
 
 .text{
@@ -48,10 +50,14 @@
     border-radius: 10px;
 }
 
-.icon{
-   font-size: 20px;
+.input svg{
+   font-size: 1.2rem;
+   margin-left: 18px;
+   margin-right: 8px;
    
 }
+
+
 
 .input input{
     height: 50px;
@@ -63,7 +69,7 @@
     font-size: 19px;
 }
 
-.input input ::placeholder{
+.input input::placeholder{
      padding-left: 19px;
 }
 
@@ -97,4 +103,9 @@
     font-size: 19px;
     font-weight: 700;
     cursor: pointer;
+}
+
+.gray{
+    background: #EAEAEA;
+    color:#676767;
 }
