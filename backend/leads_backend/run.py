@@ -1,13 +1,17 @@
 from flask import Flask
 from config import Config
-from models import db
+from deals import db
 from routes.pipeline import pipeline_bp
+from routes.leads import leads_bp
+from routes.dashboard import dashboard_bp
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
 db.init_app(app)
 app.register_blueprint(pipeline_bp, url_prefix="/api")
+app.register_blueprint(leads_bp, url_prefix="/api")
+app.register_blueprint(dashboard_bp, url_prefix="/api")
 
 if __name__ == "__main__":
     with app.app_context():
