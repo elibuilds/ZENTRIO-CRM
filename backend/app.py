@@ -28,7 +28,7 @@ def create_app(config_name="development"):
     bcrypt.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = "login"
-    cors.init_app(app)
+    cors.init_app(app, supports_credentials=True, origins=["http://localhost:5173"])
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(contacts_bp)
