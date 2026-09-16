@@ -9,7 +9,7 @@ function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedContact, setSelectedContact] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [contacts, setContacts] = useState([]);
   useEffect(() => {
