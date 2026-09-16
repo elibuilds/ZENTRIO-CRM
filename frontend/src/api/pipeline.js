@@ -1,13 +1,4 @@
-const pipelineDeals = [
-  { id: 'deal-1', title: 'Website redesign', company: 'Brightline Studio', value: 9600, stage: 'NEW', owner: 'AM', nextActivity: 'Qualify lead' },
-  { id: 'deal-2', title: 'Annual platform plan', company: 'Northstar Labs', value: 32000, stage: 'CONTACTED', owner: 'AM', nextActivity: 'Call today, 2:00 PM' },
-  { id: 'deal-3', title: 'Team expansion', company: 'Vertex Health', value: 18500, stage: 'PROPOSAL', owner: 'SK', nextActivity: 'Demo tomorrow' },
-  { id: 'deal-4', title: 'Enterprise rollout', company: 'Cedar & Co.', value: 44700, stage: 'WON', owner: 'JR', nextActivity: 'Review proposal' },
-  { id: 'deal-5', title: 'Operations workspace', company: 'Harbor & Pine', value: 12800, stage: 'NEW', owner: 'SK', nextActivity: 'Send introduction' },
-  { id: 'deal-6', title: 'Growth package', company: 'Mosaic Works', value: 21400, stage: 'LOST', owner: 'JR', nextActivity: 'Closed Sep 12' },
-]
-
-const wait = (duration) => new Promise((resolve) => setTimeout(resolve, duration))
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
 
 export const pipelineStages = [
   { value: 'NEW', label: 'New' },
@@ -29,21 +20,54 @@ export function getAllowedStages(currentStage) {
   return [currentStage, ...(allowedTransitions[currentStage] ?? [])]
 }
 
+async function handleResponse(response) {
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}))
+    throw new Error(body.error || `Request failed with status ${response.status}`)
+  }
+  return response.json()
+}
+
+function timeAgo(isoString) {
+  const diffMs = Date.now() - new Date(isoString).getTime()
+  const minutes = Math.round(diffMs / 60000)
+  if (minutes < 60) return `Updated ${minutes}m ago`
+  const hours = Math.round(minutes / 60)
+  if (hours < 24) return `Updated ${hours}h ago`
+  return `Updated ${Math.round(hours / 24)}d ago`
+}
+
+// The backend doesn't track a deal owner or company name yet (no user
+// assignment, no contact join) — these fields fill in with what's
+// actually available rather than fabricated placeholders.
+function toPipelineCard(deal) {
+  return {
+    ...deal,
+    owner: '—',
+    company: `Contact #${deal.contact_id}`,
+    nextActivity: timeAgo(deal.updated_at),
+  }
+}
+
 export const pipelineApi = {
   async list() {
-    await wait(350)
-    return pipelineDeals.map((deal) => ({ ...deal }))
+    const response = await fetch(`${API_BASE}/pipeline`)
+    const grouped = await handleResponse(response)
+    // Flatten the {NEW: [...], CONTACTED: [...]} shape into a single deal list
+    return Object.values(grouped).flat().map(toPipelineCard)
   },
 
   async updateStage(dealId, stage) {
-    await wait(200)
-    const deal = pipelineDeals.find((item) => item.id === dealId)
-    if (!deal) throw new Error('Deal not found.')
-    if (!getAllowedStages(deal.stage).includes(stage)) {
-      throw new Error(`A deal cannot move from ${deal.stage} to ${stage}.`)
-    }
+    const response = await fetch(`${API_BASE}/deals/${dealId}/stage`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stage }),
+    })
+    return handleResponse(response)
+  },
 
-    deal.stage = stage
-    return { ...deal }
+  async getHistory(dealId) {
+    const response = await fetch(`${API_BASE}/deals/${dealId}/history`)
+    return handleResponse(response)
   },
 }
