@@ -14,44 +14,7 @@ const Login_register = ({ onSuccess }) => {
   });
   const [message, setMessage] = useState("");
 
-  function handleChange(event) {
-    const { name, value } = event.target;
-    setFormData((current) => ({ ...current, [name]: value }));
-  }
-
-  async function handleSubmit(event) {
-    event.preventDefault();
-    setMessage("");
-
-    const endpoint = action === "Register" ? "/auth/signup" : "/auth/login";
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(formData),
-    });
-    const data = await response.json();
-
-    if (!response.ok) {
-      setMessage(data.error || "Request failed.");
-      return;
-    }
-
-    if (action === "Register") {
-      setAction("Login");
-      setMessage(data.msg || "Registration successful. Please log in.");
-      return;
-    }
-
-    onSuccess?.();
-  }
-
-  function handleActionClick(nextAction, event) {
-    if (action !== nextAction) {
-      event.preventDefault();
-      setAction(nextAction);
-    }
-  }
+const [action,setAction] = useState("Login");
 
   return (
     <form className='container' onSubmit={handleSubmit}>
@@ -61,10 +24,10 @@ const Login_register = ({ onSuccess }) => {
       </div>
 
       <div className="inputs">
-        <div className="input">
+        {action==="Login"? <div></div>: <div className="input">
           <IoPersonSharp />
-          <input name="username" value={formData.username} onChange={handleChange} type="text" placeholder="Username" required />
-        </div>
+          <input type="text" placeholder="Name" />
+        </div>}
 
         {action === "Register" && <div className="input">
           <MdEmail />
@@ -73,15 +36,15 @@ const Login_register = ({ onSuccess }) => {
 
         <div className="input">
           <RiLockPasswordFill className="icon" />
-          <input name="password" value={formData.password} onChange={handleChange} type="password" placeholder="Password" required />
+          <input type="password" placeholder= "Enter your password" />
         </div>
       </div>
 
-      {message && <div className="forgot-password">{message}</div>}
+      {action==="Register"?<div></div>: <div className="forgot-password"> Forgot password? <span>Click Here</span></div>}
 
       <div className='submit-container'>
-        <button type="submit" className={`submit ${action === "Login" ? "inactive" : ""}`} onClick={(event) => handleActionClick("Login", event)}>Login</button>
-        <button type="submit" className={`submit ${action === "Register" ? "inactive" : ""}`} onClick={(event) => handleActionClick("Register", event)}>Register</button>
+       <div className={action==="Login"?"submit gray":"submit"} onClick={()=>{setAction("Login")}}>Login</div>
+       <div className={action==="Register"?"submit gray":"submit"} onClick={()=>{setAction("Register")}}>Register</div>
       </div>
     </form>
   )
