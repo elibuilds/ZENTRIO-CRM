@@ -39,11 +39,14 @@ def get_dashboard_summary():
     conversion_rate = (won_total / total_deals * 100) if total_deals else 0
 
     stage_counts = (
-        db.session.query(Deal.stage, func.count(Deal.id))
+        db.session.query(Deal.stage, func.count(Deal.id), func.coalesce(func.sum(Deal.value), 0))
         .group_by(Deal.stage)
         .all()
     )
-    stage_breakdown = {stage: count for stage, count in stage_counts}
+    stage_breakdown = {
+        stage: {"count": count, "value": float(value)}
+        for stage, count, value in stage_counts
+    }
 
     return jsonify({
         "total_deals": total_deals,
