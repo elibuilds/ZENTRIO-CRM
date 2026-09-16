@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { dashboardApi } from '../../api/dashboard'
+import AuthContext from '../../components/context/AuthProvider'
 import './DashboardPage.css'
 
 function DashboardPage({ onViewPipeline, onViewTasks }) {
+  const { auth } = useContext(AuthContext)
   const [snapshot, setSnapshot] = useState(null)
   const [error, setError] = useState('')
 
@@ -35,7 +37,7 @@ function DashboardPage({ onViewPipeline, onViewTasks }) {
       <header className="dashboard-heading">
         <div>
           <p className="dashboard-kicker">Sales workspace</p>
-          <h1>Good morning, Alex</h1>
+          <h1>Good morning{auth?.username ? `, ${auth.username}` : ''}</h1>
           <p>Here&apos;s how your pipeline is moving today.</p>
         </div>
         <button className="dashboard-primary-button" type="button" onClick={onViewPipeline}>
@@ -65,7 +67,7 @@ function DashboardPage({ onViewPipeline, onViewTasks }) {
           </div>
           <div className="dashboard-stages">
             {snapshot.pipeline.map((stage) => {
-              const width = `${Math.round((stage.value / pipelineTotal) * 100)}%`
+              const width = pipelineTotal > 0 ? `${Math.round((stage.value / pipelineTotal) * 100)}%` : '0%'
               return (
                 <div className="dashboard-stage" key={stage.stage}>
                   <div className="dashboard-stage-label"><span style={{ backgroundColor: stage.color }} />{stage.stage}<b>{stage.count}</b></div>
@@ -83,6 +85,7 @@ function DashboardPage({ onViewPipeline, onViewTasks }) {
             <button className="dashboard-text-button" type="button" onClick={onViewTasks}>View all</button>
           </div>
           <ul className="dashboard-task-list">
+            {snapshot.tasks.length === 0 && <li className="dashboard-empty-note">No tasks tracked yet.</li>}
             {snapshot.tasks.map((task) => (
               <li key={task.id}>
                 <span className="dashboard-task-check" aria-hidden="true" />
