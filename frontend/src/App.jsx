@@ -1,24 +1,31 @@
 import './App.css';
 import Login_register from './components/Login-register/login_register';
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import ContactList from "./components/ContactList";
-import initialContacts from "./data/Contact";
+
 
 function App() {
-  const [contacts, setContacts] = useState(initialContacts);
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedContact, setSelectedContact] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    company: "",
-    address: "",
-  });
+  const [contacts, setContacts] = useState([]);
+  useEffect(() => {
+  fetch("http://localhost:5000/api/contacts/")
+    .then(res => res.json())
+    .then(data => setContacts(data.contacts))
+    .catch(err => console.error(err));
+}, []);
+
+const [formData, setFormData] = useState({
+  name: "",
+  email: "",
+  phone: "",
+  company: "",
+  address: "",
+});
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -30,20 +37,20 @@ function App() {
   }
 
   function handleAddContact(event) {
-    event.preventDefault();
+  event.preventDefault();
 
-    setContacts([...contacts, formData]);
-
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      company: "",
-      address: "",
-    });
-
-    setShowForm(false);
-  }
+  fetch("http://localhost:5000/api/contacts/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(formData)
+  })
+    .then(res => res.json())
+    .then(() => {
+      setContacts([...contacts, formData]);
+      setFormData({ name: "", email: "", phone: "", company: "", address: "" });
+    })
+    .catch(err => console.error(err));
+}
 
   function handleSelectContact(contact) {
     setSelectedContact(contact);
@@ -67,35 +74,46 @@ function App() {
     setIsEditing(true);
   }
 
-  function handleSaveChanges(event) {
-    event.preventDefault();
+ function handleSaveChanges(event) {
+  event.preventDefault();
 
-    const contactIndex = contacts.indexOf(selectedContact);
+  const contactIndex = contacts.indexOf(selectedContact);
 
-    const updatedContact = {
-      ...formData,
-    };
-
-    const updatedContacts = [...contacts];
-
-    updatedContacts[contactIndex] = updatedContact;
-
-    setContacts(updatedContacts);
-    setSelectedContact(updatedContact);
-    setIsEditing(false);
-  }
+  fetch(`http://localhost:5000/api/contacts/${selectedContact.id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(formData)
+  })
+    .then(res => res.json())
+    .then(data => {
+      const newContact = { ...formData, id: data.id };
+      setContacts([...contacts, newContact]);
+      setFormData({ name: "", email: "", phone: "", company: "", address: "" });
+      setShowForm(false);
+    })
+    .catch(err => console.error(err));
+}
 
   const filteredContacts = contacts.filter((contact) => {
     const search = searchTerm.toLowerCase();
 
     return (
-      contact.name.toLowerCase().includes(search) ||
-      contact.email.toLowerCase().includes(search) ||
-      contact.phone.toLowerCase().includes(search) ||
-      contact.company.toLowerCase().includes(search) ||
-      contact.address.toLowerCase().includes(search)
+      contact.name?.toLowerCase().includes(search) ||
+      contact.email?.toLowerCase().includes(search) ||
+      contact.phone?.toLowerCase().includes(search) ||
+      contact.company?.toLowerCase().includes(search) ||
+      contact.address?.toLowerCase().includes(search)
     );
   });
+
+  function handleDeleteContact(id) {
+  fetch(`http://localhost:5000/api/contacts/${id}`, { method: "DELETE" })
+    .then(() => {
+      setContacts(contacts.filter(c => c.id !== id));
+      setSelectedContact(null);
+    })
+    .catch(err => console.error(err));
+}
 
   if (!isLoggedIn) {
     return (
