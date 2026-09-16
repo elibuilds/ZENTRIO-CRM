@@ -1,5 +1,4 @@
 import '../App.css';
-import Login_register from '../components/Login-register/login_register';
 import { useState,useEffect } from "react";
 import ContactList from "../components/ContactList";
 
@@ -9,7 +8,6 @@ function ContactsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedContact, setSelectedContact] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [contacts, setContacts] = useState([]);
   useEffect(() => {
@@ -114,14 +112,6 @@ const [formData, setFormData] = useState({
     })
     .catch(err => console.error(err));
 }
-
-  if (!isLoggedIn) {
-    return (
-      <div>
-        <Login_register onSuccess={() => setIsLoggedIn(true)} />
-      </div>
-    );
-  }
 
   return (
     <div className="app">

@@ -50,7 +50,8 @@
     border-radius: 10px;
 }
 
-.input svg{
+.input svg,
+.input > span{
    font-size: 1.2rem;
    margin-left: 18px;
    margin-right: 8px;

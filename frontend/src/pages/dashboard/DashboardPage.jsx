@@ -34,7 +34,6 @@ function DashboardPage({ onViewPipeline, onViewTasks }) {
     <main className="dashboard-page">
       <header className="dashboard-heading">
         <div>
-          <p className="dashboard-kicker">Sales workspace</p>
           <h1>Good morning, Alex</h1>
           <p>Here&apos;s how your pipeline is moving today.</p>
         </div>
