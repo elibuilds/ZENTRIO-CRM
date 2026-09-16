@@ -1,104 +1,69 @@
 """
-leads.py
-Bismark's part: Lead/deal creation, editing, deletion, and listing.
+dashboard.py
+Bismark's part: Dashboard summary and recent activity aggregation.
 """
 
 from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
+from sqlalchemy import func
 
 from extensions import db
 from models import Deal
 
-leads_bp = Blueprint("leads", __name__)
+dashboard_bp = Blueprint("dashboard", __name__)
 
 
-@leads_bp.route("/leads", methods=["POST"])
-def create_lead():
-    """Create a new lead/deal."""
-    data = request.get_json(silent=True) or {}
+@dashboard_bp.route("/dashboard/summary", methods=["GET"])
+def get_dashboard_summary():
+    """Return headline numbers for the dashboard."""
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
-    title = data.get("title")
-    contact_id = data.get("contact_id")
-    value = data.get("value", 0)
+    total_deals = Deal.query.count()
 
-    if not title or not contact_id:
-        return jsonify({"error": "'title' and 'contact_id' are required"}), 400
-
-    lead = Deal(
-        title=title,
-        contact_id=contact_id,
-        value=value,
-        stage="NEW",
+    open_value = (
+        db.session.query(func.coalesce(func.sum(Deal.value), 0))
+        .filter(Deal.stage.notin_(["WON", "LOST"]))
+        .scalar()
     )
 
-    db.session.add(lead)
-    db.session.commit()
+    won_this_month = Deal.query.filter(
+        Deal.stage == "WON", Deal.updated_at >= month_start
+    ).count()
 
-    return jsonify(lead.to_dict()), 201
+    lost_this_month = Deal.query.filter(
+        Deal.stage == "LOST", Deal.updated_at >= month_start
+    ).count()
 
+    won_total = Deal.query.filter(Deal.stage == "WON").count()
+    conversion_rate = (won_total / total_deals * 100) if total_deals else 0
 
-@leads_bp.route("/leads/<int:deal_id>", methods=["PATCH"])
-def update_lead_details(deal_id):
-    """Update editable fields on a lead (title, value, contact_id)."""
-    lead = Deal.query.get(deal_id)
-    if not lead:
-        return jsonify({"error": "Lead not found"}), 404
-
-    data = request.get_json(silent=True) or {}
-
-    if "title" in data:
-        lead.title = data["title"]
-    if "value" in data:
-        lead.value = data["value"]
-    if "contact_id" in data:
-        lead.contact_id = data["contact_id"]
-
-    lead.updated_at = datetime.now(timezone.utc)
-
-    db.session.commit()
-
-    return jsonify(lead.to_dict()), 200
-
-
-@leads_bp.route("/leads/<int:deal_id>", methods=["DELETE"])
-def delete_lead(deal_id):
-    """Delete a lead/deal."""
-    lead = Deal.query.get(deal_id)
-    if not lead:
-        return jsonify({"error": "Lead not found"}), 404
-
-    db.session.delete(lead)
-    db.session.commit()
-
-    return jsonify({"message": "Lead deleted"}), 200
-
-
-@leads_bp.route("/leads", methods=["GET"])
-def list_leads():
-    """List leads, with optional filters: contact_id, min_value, max_value."""
-    query = Deal.query
-
-    contact_id = request.args.get("contact_id", type=int)
-    min_value = request.args.get("min_value", type=float)
-    max_value = request.args.get("max_value", type=float)
-
-    if contact_id is not None:
-        query = query.filter(Deal.contact_id == contact_id)
-    if min_value is not None:
-        query = query.filter(Deal.value >= min_value)
-    if max_value is not None:
-        query = query.filter(Deal.value <= max_value)
-
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 20, type=int)
-
-    paginated = query.order_by(Deal.created_at.desc()).paginate(
-        page=page, per_page=per_page, error_out=False
+    stage_counts = (
+        db.session.query(Deal.stage, func.count(Deal.id))
+        .group_by(Deal.stage)
+        .all()
     )
+    stage_breakdown = {stage: count for stage, count in stage_counts}
 
     return jsonify({
-        "leads": [lead.to_dict() for lead in paginated.items],
-        "page": page,
-        "per_page": per_page,
-        "total": paginated.total,
+        "total_deals": total_deals,
+        "open_value": float(open_value),
+        "won_this_month": won_this_month,
+        "lost_this_month": lost_this_month,
+        "conversion_rate": round(conversion_rate, 2),
+        "stage_breakdown": stage_breakdown,
     }), 200
+
+
+@dashboard_bp.route("/dashboard/recent-activity", methods=["GET"])
+def get_recent_activity():
+    """Return the most recently updated deals."""
+    limit = request.args.get("limit", 10, type=int)
+
+    deals = (
+        Deal.query.order_by(Deal.updated_at.desc())
+        .limit(limit)
+        .all()
+    )
+
+    return jsonify([deal.to_dict() for deal in deals]), 200
